@@ -60,7 +60,6 @@ agent:
   action_dim: ${action_dim}
   action_range: ${action_range}
   dx: ${dx}
-  traj_optimizer: ${traj_optimizer}
   num_train_steps: ${num_train_steps}
 
 
@@ -107,14 +106,11 @@ agent:
 
   det_suffix: 0.0
 
-  num_particles: 5
-
-
 normal_actor:
   _target_: multistep_dynamicsdiffusion.actor.TransformerActor
   obs_dim: ${obs_dim}
   action_dim: ${action_dim}
-  hidden_dim: ${model_free_hidden_dim}
+  hidden_dim: 128 
   num_layers: 2
   horizon: ${agent.horizon}
   log_std_bounds: [-5,2]
@@ -123,7 +119,7 @@ double_q_critic:
   _target_: multistep_dynamicsdiffusion.critic.DoubleQCritic
   obs_dim: ${obs_dim}
   action_dim: ${action_dim}
-  n_emb: ${model_free_hidden_dim}
+  n_emb: 128 
   num_layers: 2 
   num_heads: 4
 
@@ -141,7 +137,7 @@ hydra:
   searchpath:
     - file://config
   run:
-    dir: ./logs_test/${env_name}/${hydra:runtime.choices.dx}/${device}${oc.decode:${oc.env:WORLD_SIZE,1}}_${human_readable_steps:${num_train_steps}}_H${agent.horizon}${now:%Y%m%d-%H%M%S}
+    dir: ./logs/${env_name}/${hydra:runtime.choices.dx}/${device}${oc.decode:${oc.env:WORLD_SIZE,1}}_${human_readable_steps:${num_train_steps}}_H${agent.horizon}${now:%Y%m%d-%H%M%S}
   sweep:
     dir: ./exp/${now:%Y.%m.%d}/${now:%H%M}_${experiment}
     subdir: ${hydra.job.num}

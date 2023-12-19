@@ -71,8 +71,6 @@ class DynamicsDiffusionAgent(Agent):
         horizon,
         warmup_steps,
         det_suffix,
-        traj_optimizer,
-        num_particles,
     ):
         super().__init__()
         self.env_name = env_name
@@ -81,7 +79,6 @@ class DynamicsDiffusionAgent(Agent):
         self.action_range = action_range
         self.num_train_steps = num_train_steps
         self.det_suffix = det_suffix
-        self.num_particles = num_particles
 
         self.accelerator = utils.AcceleratorManager.get_accelerator()
 
