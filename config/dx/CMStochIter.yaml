@@ -1,0 +1,26 @@
+_target_: multistep_dynamicsdiffusion.diffusion_dx.DiffusionDx
+scheduler:
+  _target_: diffusers.CMStochasticIterativeScheduler
+env_name: ${..env_name}
+obs_dim: ${..obs_dim}
+action_dim: ${..action_dim}
+detach_xt: true
+clip_grad_norm: null
+lr: 1e-4
+num_inference_steps: 1
+ema_rate: 0.9999
+model:
+  _target_: multistep_dynamicsdiffusion.transformer.TransformerForDiffusion
+  input_dim: ${..obs_dim}
+  output_dim: ${..obs_dim}
+  horizon: ${...agent.horizon}
+  act_dim: ${..action_dim}
+
+  n_layer: 8
+  n_head: 4
+  n_emb: 768
+  p_drop_emb: 0.0
+  p_drop_attn: 0.1
+
+  causal_attn: True
+  n_cond_layers: 2 # >0: use transformer encoder for cond, otherwise use MLP
