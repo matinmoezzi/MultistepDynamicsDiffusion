@@ -8,7 +8,14 @@ class TransformerActor(nn.Module):
     """An isotropic Gaussian policy using Transformer."""
 
     def __init__(
-        self, obs_dim, action_dim, hidden_dim, num_layers, horizon, log_std_bounds
+        self,
+        obs_dim,
+        action_dim,
+        hidden_dim,
+        num_layers,
+        horizon,
+        log_std_bounds,
+        num_heads,
     ):
         super().__init__()
         self.log_std_bounds = log_std_bounds
@@ -18,7 +25,7 @@ class TransformerActor(nn.Module):
         self.obs_embedding = nn.Linear(obs_dim, hidden_dim)
         self.positional_encoding = nn.Parameter(torch.randn(1, horizon, hidden_dim))
 
-        encoder_layer = nn.TransformerEncoderLayer(d_model=hidden_dim, nhead=4)
+        encoder_layer = nn.TransformerEncoderLayer(d_model=hidden_dim, nhead=num_heads)
         self.transformer = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
         self.out_mu = nn.Linear(hidden_dim, action_dim)

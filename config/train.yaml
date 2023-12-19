@@ -1,7 +1,6 @@
 defaults:
   - _self_
-  - env: mbpo_ant
-  - dx: CMStochIter
+  - env: pendulum
   # - hydra/sweeper: svg
   # - hydra/launcher: submitit_slurm
 
@@ -28,12 +27,12 @@ normalize_obs: true
 
 action_repeat: 1
 
-log_freq: 1000
+log_freq: 100
 
 save_video: false
 delete_replay_at_end: false
 
-save_freq: 50000
+save_freq: 10000
 save_best_eval: true
 save_zfill: 7
 
@@ -82,8 +81,8 @@ agent:
   full_target_mve: False
 
   discount: 0.99
-  seq_batch_size: 512
-  step_batch_size: 1024
+  seq_batch_size: 32
+  step_batch_size: 64
   horizon: 3
   seq_train_length: ${agent.horizon}
   update_freq: 1
@@ -106,12 +105,41 @@ agent:
 
   det_suffix: 0.0
 
+dx:
+  _target_: multistep_dynamicsdiffusion.diffusion_dx.DiffusionDx
+  scheduler:
+    _target_: diffusers.DPMSolverMultistepScheduler
+  env_name: ${..env_name}
+  obs_dim: ${..obs_dim}
+  action_dim: ${..action_dim}
+  detach_xt: true
+  clip_grad_norm: null
+  lr: 1e-4
+  num_inference_steps: 15
+  ema_rate: 0.9999
+  model:
+    _target_: multistep_dynamicsdiffusion.transformer.TransformerForDiffusion
+    input_dim: ${..obs_dim}
+    output_dim: ${..obs_dim}
+    horizon: ${...agent.horizon}
+    act_dim: ${..action_dim}
+
+    n_layer: 2
+    n_head: 2
+    n_emb: 64
+    p_drop_emb: 0.0
+    p_drop_attn: 0.1
+
+    causal_attn: False
+    n_cond_layers: 2 # >0: use transformer encoder for cond, otherwise use MLP
+
 normal_actor:
   _target_: multistep_dynamicsdiffusion.actor.TransformerActor
   obs_dim: ${obs_dim}
   action_dim: ${action_dim}
-  hidden_dim: 128 
-  num_layers: 2
+  hidden_dim: 64 
+  num_layers: 1
+  num_heads: 2
   horizon: ${agent.horizon}
   log_std_bounds: [-5,2]
 
@@ -119,8 +147,8 @@ double_q_critic:
   _target_: multistep_dynamicsdiffusion.critic.DoubleQCritic
   obs_dim: ${obs_dim}
   action_dim: ${action_dim}
-  n_emb: 128 
-  num_layers: 2 
+  n_emb: 64 
+  num_layers: 1 
   num_heads: 4
 
 learn_temp:

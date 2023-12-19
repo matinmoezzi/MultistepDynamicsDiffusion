@@ -258,6 +258,7 @@ class DynamicsDiffusionAgent(Agent):
         total_log_p_us = log_p_us.sum(dim=1)
         return total_rewards, first_log_p, total_log_p_us
 
+    @profile
     def update_actor_and_alpha(self, xs, step):
         assert xs.ndimension() == 2
         n_batch, _ = xs.size()
@@ -436,6 +437,7 @@ class DynamicsDiffusionAgent(Agent):
         else:
             self.critic.log(step)
 
+    @profile
     def update(self, replay_buffer, step):
         self.last_step = step
         if step % self.update_freq != 0:
