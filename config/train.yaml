@@ -137,31 +137,6 @@ learn_temp:
   only_decrease_alpha: false
   lr: 1e-4
 
-traj_optimizer:
-  _target_: multistep_dynamicsdiffusion.traj_optimizer.TrajectoryOptimizerAgent
-  _recursive_: False
-  planning_horizon: ${agent.horizon}
-  replan_freq: 1
-  verbose: False
-  action_lb: ${action_lb}
-  action_ub: ${action_ub}
-  # this is the optimizer to generate and choose a trajectory
-  optimizer_cfg: 
-    _target_: multistep_dynamicsdiffusion.traj_optimizer.BatchICEMOptimizer
-    batch_size: ${agent.step_batch_size}
-    num_iterations: 5 
-    elite_ratio: 0.1
-    population_size: 5
-    population_decay_factor: 1.3
-    colored_noise_exponent: 2
-    keep_elite_frac: 0.3
-    alpha: 0.1
-    lower_bound: ??? 
-    upper_bound: ??? 
-    return_mean_elites: true
-    population_size_module: null 
-    device: ${device}
-
 hydra:
   searchpath:
     - file://config
