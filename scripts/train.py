@@ -58,8 +58,6 @@ class Workspace(object):
             float(self.env.action_space.low.min()),
             float(self.env.action_space.high.max()),
         ]
-        cfg.traj_optimizer.action_lb = self.env.action_space.low.tolist()
-        cfg.traj_optimizer.action_ub = self.env.action_space.high.tolist()
 
         self.agent = hydra.utils.instantiate(cfg.agent)
 
