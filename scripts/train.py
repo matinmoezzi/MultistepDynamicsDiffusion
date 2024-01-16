@@ -1,7 +1,9 @@
+import datetime
 from pathlib import Path
 import numpy as np
 from omegaconf import OmegaConf
 import torch
+import wandb
 
 torch.set_float32_matmul_precision("highest")
 torch.backends.cuda.matmul.allow_tf32 = True
@@ -101,7 +103,9 @@ class Workspace(object):
                         action = self.agent.act(obs_norm, sample=False)
                     else:
                         action = self.agent.act(obs, sample=False)
-                obs, reward, done, _ = self.env.step(action)
+                obs, reward, done, _ = self.env.step(
+                    action[0]
+                )  # step the first action of the sequence to the environment
                 self.video_recorder.record(self.env)
                 episode_reward += reward
             episode_rewards.append(episode_reward)
@@ -188,7 +192,17 @@ class Workspace(object):
 
             # run training update
             if self.step >= self.cfg.num_seed_steps - 1:
-                self.agent.update(self.replay_buffer, self.step)
+                if (
+                    self.step
+                    <= self.cfg.num_seed_steps + self.cfg.model_pretrain_seed_steps
+                ):
+                    self.agent._update_dx(
+                        self.replay_buffer,
+                        self.step,
+                        self.cfg.model_pretrain_update_repeat,
+                    )
+                else:
+                    self.agent.update(self.replay_buffer, self.step)
 
             next_obs, reward, self.done, _ = self.env.step(action)
 
@@ -281,6 +295,13 @@ def main(cfg):
         log_frequency=cfg.log_freq,
         log_suffix=log_suffix,
         format_strs=cfg.format_strs,
+    )
+
+    wandb.init(
+        project="dynamicsdiffusion",
+        sync_tensorboard=True,
+        config=OmegaConf.to_container(cfg),
+        name=f"{cfg.agent.env_name}_{cfg.dx.scheduler._target_.split('.')[-1]}_{cfg.dx.model._target_.split('.')[-1]}_{steps_to_human_readable(cfg.agent.num_train_steps)}_{datetime.datetime.now():%Y%m%d-%H:%M:%S}",
     )
 
     # Choosing seed based on global rank

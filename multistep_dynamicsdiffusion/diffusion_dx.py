@@ -106,6 +106,7 @@ class DiffusionDx:
         self.ema.update(self.model.parameters())
 
         logger.logkv_mean("train_diffusion/loss", loss, step)
+        # logger.logkv("train_diffusion/loss", loss)
 
     def unroll(self, x, us, detach_xt=False):
         x = x.to(self.accelerator.device).to(self.dtype)

@@ -436,17 +436,13 @@ class DynamicsDiffusionAgent(Agent):
         else:
             self.critic.log(step)
 
-    def update(self, replay_buffer, step):
-        self.last_step = step
-        if step % self.update_freq != 0:
-            return
-
+    def _update_dx(self, replay_buffer, step, update_repeat):
         if (
             (self.horizon > 1 or not self.critic)
             and (step % self.model_update_freq == 0)
             and (self.actor_mve or self.critic_target_mve)
         ):
-            for i in range(self.model_update_repeat):
+            for i in range(update_repeat):
                 obses, actions, rewards = replay_buffer.sample_multistep(
                     self.seq_batch_size, self.seq_train_length
                 )
@@ -460,6 +456,13 @@ class DynamicsDiffusionAgent(Agent):
                         self.rolling_dx_loss = (
                             factor * self.rolling_dx_loss + (1.0 - factor) * dx_loss
                         )
+
+    def update(self, replay_buffer, step):
+        self.last_step = step
+        if step % self.update_freq != 0:
+            return
+
+        self._update_dx(replay_buffer, step, self.model_update_repeat)
 
         n_updates = 1 if step < self.warmup_steps else self.model_free_update_repeat
         for i in range(n_updates):

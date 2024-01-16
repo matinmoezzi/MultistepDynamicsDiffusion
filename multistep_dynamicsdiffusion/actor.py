@@ -34,7 +34,9 @@ class TransformerActor(nn.Module):
         self.apply(utils.weight_init)
 
     def forward(self, obs):
-        if obs.ndim == 2:
+        if obs.ndim == 1:  # add batch dimension if needed
+            obs = obs.unsqueeze(0)
+        if obs.ndim == 2:  # add horizon dimenstion if needed
             obs = obs.unsqueeze(1)
         obs = self.obs_embedding(obs)
         obs = obs + self.positional_encoding  # Add positional encoding

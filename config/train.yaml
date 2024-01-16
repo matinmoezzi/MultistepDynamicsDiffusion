@@ -18,6 +18,10 @@ replay_buffer_capacity: min(${num_train_steps}, 1e6)
 
 num_seed_steps: 1000
 
+# For model pre-training
+model_pretrain_seed_steps: 5000
+model_pretrain_update_repeat: 5
+
 eval_freq: ??? # Over-ridden by env
 num_eval_episodes: 5
 fixed_eval: false
@@ -108,7 +112,7 @@ agent:
 dx:
   _target_: multistep_dynamicsdiffusion.diffusion_dx.DiffusionDx
   scheduler:
-    _target_: diffusers.DPMSolverMultistepScheduler
+    _target_: diffusers.DDPMScheduler
   env_name: ${..env_name}
   obs_dim: ${..obs_dim}
   action_dim: ${..action_dim}
@@ -165,7 +169,7 @@ hydra:
   searchpath:
     - file://config
   run:
-    dir: ./logs/${env_name}/${device}${oc.decode:${oc.env:WORLD_SIZE,1}}_${human_readable_steps:${num_train_steps}}_H${agent.horizon}_${now:%Y%m%d-%H%M%S}
+    dir: ./logs/${env_name}/${device}${oc.decode:${oc.env:WORLD_SIZE,1}}_${human_readable_steps:${num_train_steps}}_H${agent.horizon}_${now:%Y%m%d-%H:%M:%S}
   sweep:
     dir: ./exp/${now:%Y.%m.%d}/${now:%H%M}_${experiment}
     subdir: ${hydra.job.num}
