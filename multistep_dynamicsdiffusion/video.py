@@ -34,8 +34,7 @@ class VideoRecorder(object):
             self.frames.append(frame)
 
     def save(self, file_name):
-        distributed_state = PartialState()
-        if distributed_state.local_process_index == 0:
+        if utils.AcceleratorManager.get_accelerator().is_main_process:
             if self.enabled:
                 path = os.path.join(self.save_dir, file_name)
                 imageio.mimsave(path, self.frames, fps=self.fps)

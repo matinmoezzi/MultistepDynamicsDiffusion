@@ -234,7 +234,7 @@ class Workspace(object):
                 shutil.rmtree(self.replay_dir)
 
     def save(self, tag="latest"):
-        if PartialState().local_process_index == 0:
+        if AcceleratorManager.get_accelerator().is_main_process:
             path = os.path.join(self.work_dir, f"{tag}.pt")
             torch.save(self, path)
 
