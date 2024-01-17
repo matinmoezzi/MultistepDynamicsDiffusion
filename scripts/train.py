@@ -280,15 +280,14 @@ def main(cfg):
         cpu=True if cfg.device == "cpu" else False
     )
 
-    log_suffix = f"[{accelerator.device}]"
-    DynamicsDiffusionLogger.configure(
-        str(work_dir),
-        log_frequency=cfg.log_freq,
-        log_suffix=log_suffix,
-        format_strs=cfg.format_strs,
-    )
-
     if accelerator.is_local_main_process:
+        log_suffix = f"[{accelerator.device}]"
+        DynamicsDiffusionLogger.configure(
+            str(work_dir),
+            log_frequency=cfg.log_freq,
+            log_suffix=log_suffix,
+            format_strs=cfg.format_strs,
+        )
         wandb.init(
             entity="matinmoezzi",
             project="dynamicsdiffusion",

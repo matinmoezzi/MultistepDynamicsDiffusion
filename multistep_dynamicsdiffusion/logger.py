@@ -14,6 +14,7 @@ from contextlib import contextmanager
 import torch.distributed as dist
 from torch.utils.tensorboard import SummaryWriter
 import torch
+from . import utils
 
 
 DEBUG = 10
@@ -221,28 +222,36 @@ def log_param(key, param, step=None, log_frequency=None):
     """
     Log a parameter (e.g. a neural network weight)
     """
-    return get_current().log_param(key, param, step, log_frequency)
+    current = get_current()
+    if current:
+        return current.log_param(key, param, step, log_frequency)
 
 
 def log_histogram(key, values, step=None):
     """
     Log a histogram of values.
     """
-    return get_current().log_histogram(key, values, step)
+    current = get_current()
+    if current:
+        return current.log_histogram(key, values, step)
 
 
 def log_graph(key, values):
     """
     Log a histogram of values.
     """
-    return get_current().log_graph(key, values)
+    current = get_current()
+    if current:
+        return current.log_graph(key, values)
 
 
 def dump(step=None):
     """
     Write all of the diagnostics from the current iteration
     """
-    return get_current().dump(step)
+    current = get_current()
+    if current:
+        return current.dump(step)
 
 
 def logkv(key, val):
@@ -251,7 +260,9 @@ def logkv(key, val):
     Call this once for each diagnostic quantity, each iteration
     If called many times, last value will be used.
     """
-    get_current().logkv(key, val)
+    current = get_current()
+    if current:
+        current.logkv(key, val)
 
 
 def logkv_mean(key, val, step=None, n=1, log_frequency=1):
@@ -259,10 +270,11 @@ def logkv_mean(key, val, step=None, n=1, log_frequency=1):
     The same as logkv(), but if called many times, values averaged.
     """
     current = get_current()
-    if isinstance(current, DynamicsDiffusionLogger):
-        current.logkv_mean(key, val, step, n, log_frequency)
-    elif isinstance(current, Logger):
-        current.logkv_mean(key, val)
+    if current:
+        if isinstance(current, DynamicsDiffusionLogger):
+            current.logkv_mean(key, val, step, n, log_frequency)
+        elif isinstance(current, Logger):
+            current.logkv_mean(key, val)
 
 
 def logkvs(d):
@@ -277,18 +289,24 @@ def dumpkvs():
     """
     Write all of the diagnostics from the current iteration
     """
-    return get_current().dumpkvs()
+    current = get_current()
+    if current:
+        return current.dumpkvs()
 
 
 def getkvs():
-    return get_current().name2val
+    current = get_current()
+    if current:
+        return current.name2val
 
 
 def log(*args, level=INFO):
     """
     Write the sequence of args, with no separators, to the console and output files (if you've configured an output file).
     """
-    get_current().log(*args, level=level)
+    current = get_current()
+    if current:
+        current.log(*args, level=level)
 
 
 def debug(*args):
@@ -311,11 +329,15 @@ def set_level(level):
     """
     Set logging threshold on current logger.
     """
-    get_current().set_level(level)
+    current = get_current()
+    if current:
+        current.set_level(level)
 
 
 def set_comm(comm):
-    get_current().set_comm(comm)
+    current = get_current()
+    if current:
+        current.set_comm(comm)
 
 
 def get_dir():
@@ -323,7 +345,9 @@ def get_dir():
     Get directory that log files are being written to.
     will be None if there is no output directory (i.e., if you didn't call start)
     """
-    return get_current().get_dir()
+    current = get_current()
+    if current:
+        return current().get_dir()
 
 
 record_tabular = logkv
@@ -337,7 +361,9 @@ def profile_kv(scopename):
     try:
         yield
     finally:
-        get_current().name2val[logkey] += time.time() - tstart
+        current = get_current()
+        if current:
+            current.name2val[logkey] += time.time() - tstart
 
 
 def profile(n):
@@ -364,7 +390,10 @@ def profile(n):
 
 def get_current():
     logger = Logger.CURRENT or DynamicsDiffusionLogger.CURRENT
-    if logger is None:
+    if (
+        logger is None
+        and utils.AcceleratorManager.get_accelerator().is_local_main_process
+    ):
         _configure_default_logger()
         logger = Logger.CURRENT
     return logger
