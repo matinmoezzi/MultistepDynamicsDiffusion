@@ -289,7 +289,7 @@ def main(cfg):
         cpu=True if cfg.device == "cpu" else False
     )
 
-    log_suffix = f"[{accelerator.device}:{accelerator.local_process_index}]"
+    log_suffix = f"[{accelerator.device}]"
     DynamicsDiffusionLogger.configure(
         str(work_dir),
         log_frequency=cfg.log_freq,
@@ -297,14 +297,15 @@ def main(cfg):
         format_strs=cfg.format_strs,
     )
 
-    wandb.init(
-        entity="matinmoezzi",
-        project="dynamicsdiffusion",
-        group="MultistepDynamicsDiffusion",
-        sync_tensorboard=True,
-        config=OmegaConf.to_container(cfg),
-        name=f"{cfg.agent.env_name}_{cfg.dx.scheduler._target_.split('.')[-1]}_{cfg.dx.model._target_.split('.')[-1]}_{steps_to_human_readable(cfg.agent.num_train_steps)}_{datetime.datetime.now():%Y%m%d-%H:%M:%S}",
-    )
+    if accelerator.is_local_main_process:
+        wandb.init(
+            entity="matinmoezzi",
+            project="dynamicsdiffusion",
+            group="MultistepDynamicsDiffusion",
+            sync_tensorboard=True,
+            config=OmegaConf.to_container(cfg),
+            name=f"{cfg.agent.env_name}_{cfg.dx.scheduler._target_.split('.')[-1]}_{cfg.dx.model._target_.split('.')[-1]}_{steps_to_human_readable(cfg.agent.num_train_steps)}_{datetime.datetime.now():%Y%m%d-%H:%M:%S}",
+        )
 
     # Choosing seed based on global rank
     cfg.seed += accelerator.process_index

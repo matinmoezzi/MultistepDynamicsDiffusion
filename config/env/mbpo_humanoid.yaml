@@ -1,6 +1,6 @@
 # @package _global_
 env_name: mbpo_humanoid
-num_train_steps: 2e3
+num_train_steps: 2e6
 eval_freq: 25000
 # replay_buffer_capacity: 1e6
 
@@ -11,5 +11,5 @@ learn_temp:
   entr_decay_factor: 1.0
 
 agent:
-  horizon: 3
+  horizon: 15
   warmup_steps: 10000

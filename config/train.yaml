@@ -1,6 +1,6 @@
 defaults:
   - _self_
-  - env: pendulum
+  - env: mbpo_humanoid
   # - hydra/sweeper: svg
   # - hydra/launcher: submitit_slurm
 
@@ -19,7 +19,7 @@ replay_buffer_capacity: min(${num_train_steps}, 1e6)
 num_seed_steps: 1000
 
 # For model pre-training
-model_pretrain_seed_steps: 5000
+model_pretrain_seed_steps: 500000
 model_pretrain_update_repeat: 5
 
 eval_freq: ??? # Over-ridden by env
@@ -31,12 +31,12 @@ normalize_obs: true
 
 action_repeat: 1
 
-log_freq: 100
+log_freq: 500
 
 save_video: false
 delete_replay_at_end: false
 
-save_freq: 10000
+save_freq: 100000
 save_best_eval: true
 save_zfill: 7
 
@@ -85,7 +85,7 @@ agent:
   full_target_mve: False
 
   discount: 0.99
-  seq_batch_size: 32
+  seq_batch_size: 128
   step_batch_size: 64
   horizon: 3
   seq_train_length: ${agent.horizon}
