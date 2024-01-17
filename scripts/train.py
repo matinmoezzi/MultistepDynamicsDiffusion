@@ -192,17 +192,7 @@ class Workspace(object):
 
             # run training update
             if self.step >= self.cfg.num_seed_steps - 1:
-                if (
-                    self.step
-                    <= self.cfg.num_seed_steps + self.cfg.model_pretrain_seed_steps
-                ):
-                    self.agent._update_dx(
-                        self.replay_buffer,
-                        self.step,
-                        self.cfg.model_pretrain_update_repeat,
-                    )
-                else:
-                    self.agent.update(self.replay_buffer, self.step)
+                self.agent.update(self.replay_buffer, self.step)
 
             next_obs, reward, self.done, _ = self.env.step(action)
 
@@ -234,6 +224,7 @@ class Workspace(object):
                 shutil.rmtree(self.replay_dir)
 
     def save(self, tag="latest"):
+        AcceleratorManager.get_accelerator().wait_for_everyone()
         if AcceleratorManager.get_accelerator().is_local_main_process:
             path = os.path.join(self.work_dir, f"{tag}.pt")
             torch.save(self, path)

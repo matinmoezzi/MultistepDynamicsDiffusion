@@ -18,10 +18,6 @@ replay_buffer_capacity: min(${num_train_steps}, 1e6)
 
 num_seed_steps: 1000
 
-# For model pre-training
-model_pretrain_seed_steps: 500000
-model_pretrain_update_repeat: 5
-
 eval_freq: ??? # Over-ridden by env
 num_eval_episodes: 5
 fixed_eval: false
