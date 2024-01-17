@@ -165,7 +165,7 @@ hydra:
   searchpath:
     - file://config
   run:
-    dir: ./logs/${env_name}/${device}${oc.decode:${oc.env:WORLD_SIZE,1}}_${human_readable_steps:${num_train_steps}}_H${agent.horizon}_${now:%Y%m%d-%H:%M:%S}
+    dir: ./logs/${env_name}/${target_name:${dx.scheduler._target_}}/${device}${oc.decode:${oc.env:WORLD_SIZE,1}}_${human_readable_steps:${num_train_steps}}_H${agent.horizon}_${now:%Y%m%d-%H:%M:}/${oc.decode:${oc.env:LOCAL_RANK,0}}
   sweep:
     dir: ./exp/${now:%Y.%m.%d}/${now:%H%M}_${experiment}
     subdir: ${hydra.job.num}

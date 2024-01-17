@@ -838,6 +838,10 @@ def get_dx_model(dx: str):
         return instance.runtime.choices[f"dynamics/model@dx.model"]
 
 
+def get_target_class(target: str):
+    return target.split(".")[-1]
+
+
 from accelerate import Accelerator
 from threading import Lock
 

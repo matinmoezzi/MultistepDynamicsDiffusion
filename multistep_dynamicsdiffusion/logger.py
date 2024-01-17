@@ -390,10 +390,7 @@ def profile(n):
 
 def get_current():
     logger = Logger.CURRENT or DynamicsDiffusionLogger.CURRENT
-    if (
-        logger is None
-        and utils.AcceleratorManager.get_accelerator().is_local_main_process
-    ):
+    if logger is None:
         _configure_default_logger()
         logger = Logger.CURRENT
     return logger

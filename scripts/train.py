@@ -25,6 +25,7 @@ from multistep_dynamicsdiffusion.utils import (
     AcceleratorManager,
     get_dx_model,
     get_runtime_choice,
+    get_target_class,
     if_resolver,
     karras_distillation,
     steps_to_human_readable,
@@ -256,6 +257,7 @@ class Workspace(object):
 
 # Registering the custom resolver with the name 'if_else'
 OmegaConf.register_new_resolver("if_else", if_resolver, replace=True)
+OmegaConf.register_new_resolver("target_name", get_target_class, replace=True)
 
 OmegaConf.register_new_resolver("get_dx_model", get_dx_model, replace=True)
 
@@ -280,16 +282,16 @@ def main(cfg):
         cpu=True if cfg.device == "cpu" else False
     )
 
+    log_suffix = f"[{accelerator.device}]"
+    DynamicsDiffusionLogger.configure(
+        str(work_dir),
+        log_frequency=cfg.log_freq,
+        log_suffix=log_suffix,
+        format_strs=cfg.format_strs,
+    )
     if accelerator.is_local_main_process:
-        log_suffix = f"[{accelerator.device}]"
-        DynamicsDiffusionLogger.configure(
-            str(work_dir),
-            log_frequency=cfg.log_freq,
-            log_suffix=log_suffix,
-            format_strs=cfg.format_strs,
-        )
+        wandb.tensorboard.patch(root_logdir=str(work_dir))
         wandb.init(
-            entity="matinmoezzi",
             project="dynamicsdiffusion",
             group="MultistepDynamicsDiffusion",
             sync_tensorboard=True,
